@@ -15,5 +15,7 @@
 `start nginx`
 <br><br>
 В задании требуется настроить обслуживание двух доменных имен на одном сервере по протоколу https, поэтому далее были выписаны самоподписанные сертификаты для обоих доменных имен
-`genrsa -out rootCA.key 2048
-req -new -x509 -key rootCA.key -out rootCA.crt -days 1024`
+```
+genrsa -out rootCA.key 2048
+req -new -x509 -key rootCA.key -out rootCA.crt -days 1024
+```
