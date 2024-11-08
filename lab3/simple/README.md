@@ -121,6 +121,29 @@
 Deployment-конфигурация для pgadmin: 
 
     ``` 
+    apiVersion: v1
+    kind: PersistentVolume
+    metadata:
+    name: postgres-pv
+    spec:
+    capacity:
+        storage: 1Gi
+    accessModes:
+        - ReadWriteOnce
+    hostPath:
+        path: "/mnt/data"
+
+    apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+    name: postgres-pvc
+    spec:
+    accessModes:
+        - ReadWriteOnce
+    resources:
+        requests:
+        storage: 1Gi
+
     apiVersion: apps/v1
     kind: Deployment
     metadata:
