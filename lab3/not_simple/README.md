@@ -125,9 +125,6 @@ pgadmin:
 
 В отчете файлы-шаблоны не приведены, так как они достаточно объемны, но они находятся в папке отчета, где с ними можно ознакомиться.
 
-- postgres.yaml : [ссылка](lab3/not_simple/my_postgres/templates/postgres.yaml)
-- pgadmin.yaml : [ссылка](lab3/not_simple/my_postgres/templates/pgadmin.yaml)
-
 Перед тем, как собирать релиз, проверим корректность с помощью линтера `helm lint`:
 
 ![alt text](image-3.png)
