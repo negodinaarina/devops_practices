@@ -1,0 +1,63 @@
+image: python:3.11
+
+variables:
+  VENV_PATH: .venv
+
+cache:
+  paths:
+    - $VENV_PATH/
+    - __pycache__/
+
+stages:
+  - installation
+  - formatting
+  - tests
+  - deploy
+  
+install_dependencies:
+  stage: installation
+  script:
+    - python -m venv $VENV_PATH
+    - source $VENV_PATH/bin/activate
+    - pip install -r requirements.txt
+
+  artifacts:
+    paths:
+      - $VENV_PATH
+
+check_formatting:
+  stage: formatting
+  script:
+    - source $VENV_PATH/bin/activate
+    - export PYTHONPATH=$CI_PROJECT_DIR
+    - black . --check
+    - isort . -c
+
+  dependencies:
+    - install_dependencies
+
+
+run_unit_tests:
+  stage: tests
+  script:
+    - source $VENV_PATH/bin/activate
+    - export PYTHONPATH=$CI_PROJECT_DIR
+    - pytest tests/
+
+  dependencies:
+    - install_dependencies
+
+deploy_app:
+  stage: deploy
+  script:
+    - echo 'Activating venv and exporting PYTHONPATH'
+    - source $VENV_PATH/bin/activate
+    - export PYTHONPATH=$CI_PROJECT_DIR
+    - echo 'Changing to application directory'
+    - cd source
+    - echo 'Starting server'
+    - nohup python app.py &
+    - FLASK_PID=$!
+    - sleep 30
+    - echo 'Server successfully started, killing it'
+    - kill $FLASK_PID 
