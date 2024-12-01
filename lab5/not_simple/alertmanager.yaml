@@ -1,0 +1,30 @@
+alertmanager:
+  config:
+    global:
+      resolve_timeout: 5m
+      telegram_api_url: "https://api.telegram.org"
+
+    route:
+      receiver: telegram-bot
+
+    receivers:
+      - name: telegram-bot
+        telegram_configs:
+          - chat_id: 745035865
+            bot_token: 7793201494:AAFqauY1EYwDB6PFcnVPUKu01QmcWvmDpZA
+            api_url: "https://api.telegram.org"
+            send_resolved: true
+            parse_mode: ''
+
+serverFiles:
+  alerting_rules.yml:
+    groups:
+      - name: postgresql
+        rules:
+        - alert: Connections limit
+          expr: pg_stat_activity_count > 2
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "!!!Too many connections to database test!!!"

@@ -1,0 +1,99 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Values.postgres.secret.name }}
+type: Opaque
+data:
+  postgres-root-username: {{ .Values.postgres.secret.username | b64enc }}
+  postgres-root-password: {{ .Values.postgres.secret.password | b64enc }}
+
+---
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: {{ .Values.postgres.persistentVolume.name }}
+spec:
+  capacity:
+    storage: {{ .Values.postgres.persistentVolume.size }}
+  accessModes:
+    - {{ .Values.postgres.persistentVolume.accessMode }}
+  hostPath:
+    path: "{{ .Values.postgres.persistentVolume.path }}"
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.postgres.persistentVolumeClaim.name }}
+spec:
+  accessModes:
+    - {{ .Values.postgres.persistentVolumeClaim.accessMode }}
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistentVolumeClaim.size }}
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.postgres.deployment.name }}
+spec:
+  replicas: {{ .Values.postgres.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.postgres.appName }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.postgres.appName }}
+    spec:
+      containers:
+      - image: {{ .Values.postgres.deployment.image }}
+        name: {{ .Values.postgres.deployment.containerName }}
+        env:
+          - name: POSTGRES_USER
+            valueFrom:
+              secretKeyRef:
+                key: {{ .Values.postgres.secret.usernameKey }}
+                name: {{ .Values.postgres.secret.name }}
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                key: {{ .Values.postgres.secret.passwordKey }}
+                name: {{ .Values.postgres.secret.name }}
+        resources:
+          requests:
+            cpu: {{ .Values.postgres.resources.requests.cpu }}
+            memory: {{ .Values.postgres.resources.requests.memory }}
+          limits:
+            cpu: {{ .Values.postgres.resources.limits.cpu }}
+            memory: {{ .Values.postgres.resources.limits.memory }}
+        volumeMounts:
+          - mountPath: {{ .Values.postgres.deployment.mountPath }}
+            name: {{ .Values.postgres.persistentVolumeClaim.name }}
+      volumes:
+        - name: {{ .Values.postgres.persistentVolumeClaim.name }}
+          persistentVolumeClaim:
+            claimName: {{ .Values.postgres.persistentVolumeClaim.name }}
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: {{ .Values.postgres.appName }}
+  name: {{ .Values.postgres.service.name }}
+spec:
+  ports:
+    - name: {{ .Values.postgres.service.portName }}
+      nodePort: {{ .Values.postgres.service.nodePort }}
+      port: {{ .Values.postgres.service.port }}
+  selector:
+    app: {{ .Values.postgres.appName }}
+  type: {{ .Values.postgres.service.type }}
+
+---
